@@ -23,14 +23,13 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
     if(filter_var($user_email,FILTER_VALIDATE_EMAIL)){
         
         //if true,user entered an email
-         $query="SELECT * FROM accounts WHERE email='$user_email'";
-        
+         $query="SELECT * FROM accounts WHERE email=?";
     }
     else{
         
         //if false,user entered a username
-         $query="SELECT * FROM accounts WHERE name='$user_email'";
-        
+        // $query="SELECT * FROM accounts WHERE name='$user_email'";
+        $query="SELECT * FROM accounts WHERE name=?";
     }
     $pass=$_POST["password"];
     
@@ -45,8 +44,13 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
     $errors=array();
     
     //run query
-    $userdata = $connection->query($query);
-    
+          $statement = $connection->prepare($query);
+          //s string i integer b blob d double
+          $statement->bind_param("s",$user_email);
+          $statement->execute();
+          //get the result of the query
+          $userdata = $statement ->get_result();
+   // $userdata = $connection->query($query);
     
     
     
@@ -54,6 +58,7 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
     if($userdata->num_rows > 0){
         //converts result into associative array
         $user = $userdata->fetch_assoc();
+        //print_r($user);
         //built in php function
         //php.net.com/manual
         //echo $user["password"];
@@ -63,10 +68,18 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
         }
         else{
             $message="You have been logged in";
+            //create account id as a session variable
+            $account_id = $user["id"];
+            $_SESSION["id"] = $account_id;
+            
+            //create account username as a session variable
+            
             
             //username fm database
             $username= $user["username"];
             $_SESSION["username"]=$username;
+            
+            //create account email a session variable
             $email=$user["email"];
             $_SESSION["email"]=$email;
             

@@ -7,82 +7,100 @@ include("includes/database.php");
 if($_SERVER["REQUEST_METHOD"]=="POST"){
 
 
-         //   print_r($_POST);
-        //get data from the form(each input's name attribute becomes $_POST["attribute value"])
-        $errors=array();
-        
-        
-        
-        $username=$_POST["username"];
-        
-        //check username for errors
-        if(strlen($username)>16){
-            //create error message
-            $errors["username"]="username too long";
-        }
-        if(strlen($username)<6){
-            $errors["username"]=$errors["username"] ." " . "username too short";
-        }
-        
-        if ($errors["username"]){
-        $errors["username"]=trim($errors["username"]);
-        }
-        
-        
-        
-        $email=$_POST["email"];
-        
-        //check email for errors
-        $email_check= filter_var($email,FILTER_VALIDATE_EMAIL);
-        if($email_check==false){
-            $errors["email"]="email address is not valid";
-        }
-        
-        
-        $password1=$_POST["password1"];
-        $password2=$_POST["password2"];
-        
-        if($password1 !== $password2){
-            $errors["password"]="passwords are not equal";
-        }
-        //Check password length
-        elseif(strlen($password1)<8){
-            $errors["password"]="password should be atleast 8 characters long ";
-        }
+     //   print_r($_POST);
+    //get data from the form(each input's name attribute becomes $_POST["attribute value"])
+    $errors=array();
+    
+    
+    
+    $username=$_POST["username"];
+    
+    //check username for errors
+    if(strlen($username)>16){
+        //create error message
+        $errors["username"]="username too long";
+    }
+    if(strlen($username)<6){
+        $errors["username"]=$errors["username"] ." " . "username too short";
+    }
+    
+    if ($errors["username"]){
+    $errors["username"]=trim($errors["username"]);
+    }
+    
+    
+    
+    $email=$_POST["email"];
+    
+    //check email for errors
+    $email_check= filter_var($email,FILTER_VALIDATE_EMAIL);
+    if($email_check==false){
+        $errors["email"]="email address is not valid";
+    }
+    
+    
+    $password1=$_POST["password1"];
+    $password2=$_POST["password2"];
+    
+    if($password1 !== $password2){
+        $errors["password"]="passwords are not equal";
+    }
+    //Check password length
+    elseif(strlen($password1)<8){
+        $errors["password"]="password should be atleast 8 characters long ";
+    }
 
 
-        //if no errors write data to database
-        if(count($errors)==0){
-            //hash the password
-            $password=password_hash($password1,PASSWORD_DEFAULT);
-            //create a query string
-            $query="insert 
-                    into accounts
-                    (name,email,password,status,created)
-                    values
-                    ('$username','$email','$password',1,NOW())";
-                    $result=$connection->query($query);
-                 //   var_dump(connection)
-                 //   echo $query;
-                    if($result==true){
-                       // echo " account created";
-                        $message = "Account successfully created";
+    //if no errors write data to database
+    if(count($errors)==0){
+        //hash the password
+        $password=password_hash($password1,PASSWORD_DEFAULT);
+        //create a query string
+  //      $query="insert 
+  //              into accounts
+ //               (name,email,password,status,created)
+          //      values
+   //             ('$username','$email','$password',1,NOW())";
+     //           $result=$connection->query($query);
+     
+     //the best way to create safe query is to use parameterised query
+          $query="insert 
+              into accounts
+              (name,email,password,status,created)
+              values
+                (?,?,?,1,NOW())";
+          $statement = $connection->prepare($query);
+          //s string i integer b blob d double
+          $statement->bind_param("sss",$username,$email,$password);
+        //      $result=$connection->query($query);
+     $statement->execute();
+ //    $result=$statement->get_result();
+  //    var_dump($result);
+      
+     
+             //   var_dump(connection)
+             //   echo $query;
+   //             if($result==true){
+                 if($statement->affected_rows >0){
+                   // echo " account created";
+                    $message = "Account successfully created";
+                }
+                else{
+                    //special query 1062 if not successful check for duplicates
+                    if($connection->errno==1062){
+                        echo $connection->error;
+                        $message= $connection->error;
+                            //check if error contains ""username"
+                            if(strstr($message,"name")){
+                                $errors["username"]="username has been taken";
+                            }
+                            if(strstr($message,"email")){
+                                $errors["email"]="email has been taken";
+                            }
+                    
                     }
-                    else{
-                        if($connection->errno==1062){
-                            echo $connection->error;
-                            $message= $connection->error;
-                                //check if error contains ""username"
-                                if(strstr($message,"name")){
-                                    $errors["username"]="username has been taken";
-                                }
-                                if(strstr($message,"email")){
-                                    $errors["email"]="email has been taken";
-                                }
-                        
-                        }
-                    }
-        }
+                }
+    }
 }
 ?>
 <!doctype html>

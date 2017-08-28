@@ -1,0 +1,11 @@
+INSERT INTO user_details 
+  (account_id,
+  first_name,
+  last_name,
+  street_number,
+  unit_number,
+  street_name,
+  suburb,
+  state,country,
+  post_code)
+  VALUES ('7','srikar','tejas','6','8','45','cdsf','fddsf','Au','2000')

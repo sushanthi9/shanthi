@@ -6,7 +6,7 @@
                  <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
             </button>
-            <a href="index.php" class="navbar-brand">Hello</a>
+            <a href="index.php" class="navbar-brand">Index</a>
             <p class="navbar-text">
                  <?php
                        if($_SESSION["username"]){
@@ -22,9 +22,12 @@
                 <li><a href="register.php">SIGN UP</a></li>
                 <li><a href="login.php">Sign In</a></li>
                 <li><a href="account.php">MY ACCOUNT</a></li>
+                <li><a href="logout.php">Sign Out</a></li>
+                <li><a href="phpmyadmin" target="_blank">Database</a></li>
             </ul>
         </div>
         <div class="navbar-text navbar-right">
+           
        
         </div>
     </nav>
